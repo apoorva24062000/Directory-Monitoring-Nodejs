@@ -1,0 +1,491 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directory Monitoring</title>
+<!-- Include Socket.IO -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script> -->
+
+  <!-- Add Bootstrap CSS link -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+  <!-- Custom CSS for button size and file counts section -->
+  <style>
+#updateTableButton {
+  position: fixed;
+  right: 10px; /* Adjust the right position as needed */
+
+  top: 50%; /* Adjust the top position as needed */
+  transform: translateY(-50%); /* Center the button vertically */
+  width: 80px; /* Adjust the width as needed */
+  height: 30px; /* Adjust the height as needed */
+  padding: 5px 10px; /* Adjust padding to control button size */
+  font-size: 14px; /* Adjust font size as needed */
+  background: steelblue;
+  border: 1px solid black;
+  border-radius: 10px;
+}
+
+
+    .form-control[type=file]:not(:disabled):not([readonly]) {
+    cursor: pointer;
+    background: aliceblue;
+    }
+
+    #fileContainer {
+    display: flex;
+    align-items: center;
+  }
+
+    #fileCounts {
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+      margin-right: 70px;
+      border: solid 2px;
+      margin-bottom: 20px;
+      width:30%;
+      background-color: aliceblue;
+    }
+
+    #fileCounts h5 {
+      font-family: cursive;
+      margin-bottom: 5px;
+      font-weight: bold;
+      display: block;
+    }
+
+    #fileCounts ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #fileCounts li {
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    #toaster {    /*Added Toaster css*/
+      display: none;
+      position: fixed;
+      top: 70px;
+      z-index:1;
+      right: 20px;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #duplicateToaster {    /*Added Toaster css*/
+      display: none;
+      position: fixed;
+      top: 70px;
+      z-index:1;
+      right: 20px;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #closeButton {
+      cursor: pointer;
+      float: right;
+      border-radius: 10px;
+      border: solid 1px white;
+      padding: 2px;
+    }
+
+    #replaceButton {
+      cursor: pointer;
+      float: right;
+      border-radius: 10px;
+      border: solid 1px white;
+      padding: 2px;
+      margin-right: 14px;
+    }
+
+    #filters2{
+      display: none;
+      font-weight: bold;
+      font-family: cursive;
+    }
+
+    #filters1{
+      font-weight: bold;
+      font-family: cursive;
+    }
+
+    .user{
+      color: #fff;
+      margin-left: 940px;
+    }
+
+    .sort-arrow{
+      color: lightgrey;
+    font-size: 10px;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">Directory Monitoring</a>
+      <span class="user" id="userloggedIn">Apoorva Singh</span>
+      <img src="https://cdn.pixabay.com/photo/2017/05/29/23/02/logging-out-2355227_1280.png" height="35px" width="35px" id="logoutLink">
+    </div>
+  </nav>
+
+   <!-- Added DOC TO PDF MODAL -->
+  <div class="modal fade" id="convertModal" tabindex="-1" aria-labelledby="convertModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="convertModalLabel">Convert DOC to PDF</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to convert the selected DOC file to PDF?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="convertDocToPDF()">Convert</button>
+        </div>
+      </div>
+    </div>
+  </div>
+ <!-- Added Excel TO PDF MODAL -->
+ <div class="modal fade" id="ExcelModal" tabindex="-1" aria-labelledby="convertModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ExcelModal">Convert Excel to PDF</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to convert the selected Excel file to PDF?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="convertExcelToPDF()">Convert</button>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- Modal for Image COMPRESS AND DOWNLOAD -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imageModalLabel">Image Operations</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="text-align: right;">
+          <button type="button" class="btn btn-primary" onclick="redirectToContentPageForCompress()">Compress and Download</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#resizeImageModal">Resize Image</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- CSV Modal -->
+<div class="modal fade" id="csvModal" tabindex="-1" aria-labelledby="csvModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="csvModalLabel">CSV Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="text-align: right;">
+        <button id="displayCsvButton" class="btn btn-primary">View</button>
+        <button id="convertCsvToPdfButton" class="btn btn-primary">Convert to PDF</button>
+      </div>
+    </div>
+  </div>
+</div> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmationModalLabel">Delete Confirmation</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this file?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Yes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+  <!-- Modal for Image Resize -->
+  <div class="modal fade" id="resizeImageModal" tabindex="-1" aria-labelledby="resizeImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="resizeImageModalLabel">Resize Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" >
+          <label for="inputHeight" class="form-label">Enter Height:</label>
+          <input type="text" class="form-control" id="inputHeight" placeholder="Enter height">
+  
+          <label for="inputWidth" class="form-label">Enter Width:</label>
+          <input type="text" class="form-control" id="inputWidth" placeholder="Enter width">
+          <div class="d-flex justify-content-end mt-3">
+
+          <button type="button" class="btn btn-primary  me-2" onclick="resizeImage()">Submit</button>
+          <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal" >Cancel</button>
+                  </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div id="toaster">    <!-- Added Toaster -->
+    <div id="toasterMessage"></div>
+  </div>
+
+  <div id="duplicateToaster">
+    <div id="duplicateToasterMessage"></div>
+    <div>Press Ok to replace the existing file with the selected file</div>
+    <div>Press Cancel to discard the selected file</div>
+    <div id="closeButton" onclick="closeDuplicateToaster()">Cancel</div>
+    <div id="replaceButton" onclick="uploadDuplicateFile()">Ok</div>
+  </div>
+
+  <!-- Content -->
+  <div class="container mt-3">
+
+    <!-- Styling for displaying file counts -->
+  <div id="fileContainer">
+    <div id="fileCounts">
+      <h5>File Counts:</h5>
+      <ul>
+        <li><strong>Image: </strong> <span id="imageCount"></span></li>
+        <li><strong>JSON: </strong> <span id="jsonCount"></span></li>
+        <li><strong>CSV: </strong> <span id="csvCount"></span></li>
+        <li><strong>PDF: </strong> <span id="pdfCount"></span></li>
+        <li><strong>DOC: </strong> <span id="docCount"></span></li>
+        <li><strong>Excel: </strong> <span id="excelCount"></span></li>
+
+      </ul>
+    </div>
+    <img src="https://img.freepik.com/free-vector/add-files-concept-illustration_114360-341.jpg?w=740&t=st=1705864326~exp=1705864926~hmac=baa8edf8038c8eed4d92454913ea228cbf3f8f08211de7e4ecdf9e72b7f24080" alt="Lamp" id='img' width="222" height="222">
+  </div>
+
+
+    <!-- <form class="d-flex mx-2">
+        <input class="form-control me-2" type="search" placeholder="Search" id="searchInput"
+          oninput="searchTable()">
+        <button class="btn btn-outline-success" type="button" onclick="searchTable()">Search</button>
+        <select class="form-select me-2" id="filterColumn" onchange="searchTable()">
+          <option value="all">All Columns</option>
+          <option value="0">jpg</option>
+          <option value="1">jpeg</option>
+          <option value="2">png</option>
+          <option value="3">csv</option>
+          <option value="4">pdf</option>
+          < Add more options for additional columns --> 
+  <!-- </select> 
+      </form>  -->
+
+
+
+      <!-- ... (your existing code) ... -->
+
+<!-- Filtering options for extensions and Search bar in the same line -->
+
+
+
+<!-- <div class="col-md-6">
+  <label for="nameFilter" class="form-label">Filter by Name:</label>
+  <input type="text" class="form-control" id="nameFilter" oninput="filterTable()">
+</div> -->
+<div class="row mb-3">
+  <div class="filters">
+    <h5 id="filters1">Filter(1)</h5>
+    <h5 id="filters2">Filters(2)</h5>
+  </div>
+  <div class="col-md-3">
+    <label for="extensionFilter" class="form-label">Filter by Extension:</label>
+    <select class="form-select" id="extensionFilter" onchange="filterTable()">
+      <option value="all">All Extensions</option>
+      <option value="jpg">jpg</option>
+      <option value="jpeg">jpeg</option>
+      <option value="png">png</option>
+      <option value="csv">csv</option>
+      <option value="pdf">pdf</option>
+      <option value="json">json</option>
+      <option value="pptx">pptx</option>
+      <option value="xlsx">xlsx</option>
+      <option value="docx">docx</option>
+    </select>
+  </div>
+
+
+
+  <div class="col-md-3">
+    <label for="alphanumericFilter" class="form-label">Filter by Filename:</label>
+    <select class="form-select" id="alphanumericFilter" onchange="filterTable()">
+      <option value="all">All Alphanumeric</option>
+      <option value="0-9">0-9</option>
+      <option value="A-H">A-H</option>
+      <option value="I-U">I-U</option>
+      <option value="V-Z">V-Z</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <label for="searchInput" class="form-label">Search:</label>
+    <input type="text" class="form-control" id="searchInput" oninput="filterTable()">
+  </div>
+</div>
+
+
+<!-- ... (your existing code) ... -->
+
+
+    <!-- <div class="card border-0">
+        <div class="card-header">
+          <h5 class="card-title">   File Data Table</h5>
+          
+        </div>
+        <div class="card-body">
+          <table class="table" id="data-table">
+            <thead>
+              <th scope="col">filename</th>
+              <th scope="col" >folder</th>
+              <th scope="col" >extension</th>
+              <th scope="col">Reference</th> -->
+              <!-- <th scope="col" contenteditable='true'>Score</th>
+              <th scope="col" contenteditable='true'>Grade</th> -->
+              <!-- <th scope="col">Actions</th> -->
+            <!-- </thead>
+            <tbody>
+             
+            </tbody>
+          </table>
+          </div> -->
+
+
+
+          <!-- <button class="btn btn-primary" id="updateTableButton">Update Table</button> -->
+
+
+          <div class="card border-0">
+            <div class="card-header">
+              <h5 class="card-title">File Data Table</h5>
+            </div>
+            <div class="card-body">
+              <table class="table" id="data-table">
+                <thead>
+                  
+
+                  <!-- <th scope="col" onclick="sortTable(0)">Filename</th>
+                  <th scope="col" onclick="sortTable(1)" >Folder</th>
+                  <th scope="col" onclick="sortTable(2)" >Extension</th>
+                  <th scope="col" onclick="sortTable(3)" >Creation Date</th> -->
+                  <!-- <th scope="col" onclick="sortTable(0)">
+                    Filename <span id="filename-sort-arrow" style="font-weight: bold;">&#8597;</span>
+                  </th>
+                  <th scope="col" onclick="sortTable(1)">
+                    Folder <span id="folder-sort-arrow" style="font-weight: bold;">&#8597;</span>
+                  </th>
+                  <th scope="col" onclick="sortTable(2)">
+                    Extension <span id="extension-sort-arrow" style="font-weight: bold;">&#8597;</span>
+                  </th> -->
+
+
+                  <th scope="col" onclick="sortTable(0, 'filename')">filename <span id="filename-sort-arrow" class="sort-arrow">&#9660;&#9650;</span></th>
+                    <th scope="col" onclick="sortTable(1, 'folder')">folder <span id="folder-sort-arrow" class="sort-arrow">&#9660;&#9650;</span></th>
+                    <th scope="col" onclick="sortTable(2, 'extension')">extension <span id="extension-sort-arrow" class="sort-arrow">&#9660;&#9650;</span></th>
+                    <th scope="col" onclick="sortTable(3, 'CreationDate')">Creation Date<span id="CreationDate-sort-arrow" class="sort-arrow">&#9660;&#9650;</span></th>
+
+                
+                  
+                    <th scope="col">Icon</th>
+                    <th scope="col">Actions</th>
+             
+                
+                
+
+
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+              <nav aria-label="Page navigation">
+                <ul class="pagination" id="pagination"></ul>
+              </nav>
+            </div>
+          </div>
+          <!-- <<nav aria-label="Page navigation">
+            <ul class="pagination" id="pagination">
+              < Pagination links will be dynamically added here -->
+            <!-- </ul> --> 
+          <!-- </nav>
+        </div>
+      </div>
+    </div> --> 
+
+  <!-- Add Bootstrap JS and Popper.js scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.18.0/font/bootstrap-icons.css">
+
+  <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script> -->
+  <!-- Add your custom JavaScript file -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+
+  <script src="/js/home.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.css">
+<script>
+    if(!window.sessionStorage.token){
+        window.location.href ='/'
+    }
+</script>
+
+
+<!-- Add this script to your HTML file -->
+
+</body>

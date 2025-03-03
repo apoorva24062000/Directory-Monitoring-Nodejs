@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Signup and Login</title>
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="main">
+      <input type="checkbox" id="chk" aria-hidden="true" />
+
+      <div class="signup">
+        <form id="signup-form">
+          <label for="chk" aria-hidden="true">Sign up</label>
+          <div style="margin-top: -8%">
+            <input
+              type="text"
+              name="txt"
+              placeholder=" name"
+              required=""
+              id="name"
+            />
+
+            <input
+            type="text"
+            name="txt"
+            placeholder=" username"
+            required=""
+            id="username"
+          />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              required=""
+              id="email"
+            />
+            <input
+              type="password"
+              name="pswd"
+              placeholder="Password"
+              required=""
+              id="password"
+            />
+            <!-- <input type=" password" name="pswd" placeholder="Confirm Password" required="" id ="confirm_password"> -->
+            <input
+              type="password"
+              name="pswd"
+              placeholder="Confirm Password"
+              required=""
+              id="confirm_password"
+            />
+            <button type="submit">Sign up</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="login">
+        <form id="login-form">
+          <label for="chk" aria-hidden="true">Login</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            required=""
+            id="email_login"
+          />
+          <input
+            type="password"
+            name="pswd"
+            placeholder="Password"
+            required=""
+            id="password_login"
+          />
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+   
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/index.js"></script>
+
+   
+  </body>
+</html>
